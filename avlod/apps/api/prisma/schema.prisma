@@ -1,0 +1,446 @@
+// AVLOD — PostgreSQL schema.
+// Deletion policy: foreign keys from family records use `Restrict`; the API removes
+// dependent rows explicitly inside transactions and writes an AuditLog entry.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FamilyRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum ParentType {
+  BIOLOGICAL
+  ADOPTIVE
+  STEP
+  FOSTER
+  GUARDIAN
+  OTHER
+}
+
+enum UnionType {
+  MARRIAGE
+  PARTNERSHIP
+  ENGAGEMENT
+  OTHER
+}
+
+enum UnionStatus {
+  ACTIVE
+  DIVORCED
+  SEPARATED
+  WIDOWED
+  ENDED
+  UNKNOWN
+}
+
+enum VerificationStatus {
+  VERIFIED
+  UNVERIFIED
+  DISPUTED
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
+enum MemoryEventType {
+  BIRTH
+  WEDDING
+  GRADUATION
+  MIGRATION
+  CELEBRATION
+  WORK
+  EVERYDAY
+  HISTORIC
+  OTHER
+}
+
+enum TimelineEventType {
+  BIRTH
+  DEATH
+  MARRIAGE
+  MIGRATION
+  EDUCATION
+  CAREER
+  ACHIEVEMENT
+  FAMILY
+  HISTORIC
+  OTHER
+}
+
+model User {
+  id                String    @id @default(uuid()) @db.Uuid
+  email             String    @unique
+  passwordHash      String
+  displayName       String
+  locale            String    @default("uz")
+  failedLoginCount  Int       @default(0)
+  lockedUntil       DateTime?
+  passwordChangedAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  sessions       RefreshSession[]
+  resetTokens    PasswordResetToken[]
+  memberships    FamilyMembership[]
+  invitationsOut FamilyInvitation[]   @relation("InvitedBy")
+  familiesMade   Family[]             @relation("FamilyCreatedBy")
+  auditEntries   AuditLog[]
+}
+
+model RefreshSession {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  tokenHash    String    @unique
+  userAgent    String?
+  ip           String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?   @db.Uuid
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Family {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  description  String?
+  isDemo       Boolean   @default(false)
+  isPublicDemo Boolean   @default(false)
+  createdById  String?   @db.Uuid
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  createdBy      User?                     @relation("FamilyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  memberships    FamilyMembership[]
+  invitations    FamilyInvitation[]
+  persons        Person[]
+  parentLinks    ParentChildRelationship[]
+  unions         Union[]
+  media          MediaAsset[]
+  personPhotos   PersonPhoto[]
+  memories       Memory[]
+  albums         Album[]
+  timelineEvents TimelineEvent[]
+  auditEntries   AuditLog[]
+
+  @@index([isPublicDemo])
+}
+
+model FamilyMembership {
+  id        String     @id @default(uuid()) @db.Uuid
+  familyId  String     @db.Uuid
+  userId    String     @db.Uuid
+  role      FamilyRole
+  personId  String?    @db.Uuid
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  family Family  @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  person Person? @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  @@unique([familyId, userId])
+  @@index([userId])
+}
+
+model FamilyInvitation {
+  id          String           @id @default(uuid()) @db.Uuid
+  familyId    String           @db.Uuid
+  email       String
+  role        FamilyRole
+  tokenHash   String           @unique
+  status      InvitationStatus @default(PENDING)
+  invitedById String?          @db.Uuid
+  expiresAt   DateTime
+  respondedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  family    Family @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  invitedBy User?  @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@index([familyId, status])
+  @@index([email, status])
+}
+
+model Person {
+  id               String    @id @default(uuid()) @db.Uuid
+  familyId         String    @db.Uuid
+  givenName        String
+  familyName       String?
+  patronymic       String?
+  maidenName       String?
+  sex              Sex       @default(UNKNOWN)
+  birthYear        Int?
+  birthMonth       Int?
+  birthDay         Int?
+  birthApproximate Boolean   @default(false)
+  birthPlace       String?
+  deathYear        Int?
+  deathMonth       Int?
+  deathDay         Int?
+  deathApproximate Boolean   @default(false)
+  deathPlace       String?
+  /// null = unknown
+  isLiving         Boolean?
+  biography        String?
+  occupation       String?
+  achievements     String[]  @default([])
+  branchLabel      String?
+  notes            String?
+  portraitMediaId  String?   @db.Uuid
+  isDemo           Boolean   @default(false)
+  createdById      String?   @db.Uuid
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  family         Family                    @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  portrait       MediaAsset?               @relation("PersonPortrait", fields: [portraitMediaId], references: [id], onDelete: SetNull)
+  asParent       ParentChildRelationship[] @relation("ParentSide")
+  asChild        ParentChildRelationship[] @relation("ChildSide")
+  unionsA        Union[]                   @relation("PartnerA")
+  unionsB        Union[]                   @relation("PartnerB")
+  photos         PersonPhoto[]
+  memories       MemoryPerson[]
+  timelineEvents TimelineEvent[]
+  memberships    FamilyMembership[]
+
+  @@unique([id, familyId])
+  @@index([familyId, deletedAt])
+  @@index([familyId, familyName, givenName])
+  @@index([familyId, branchLabel])
+}
+
+/// Directed parent → child edge. Both people must belong to `familyId`
+/// (enforced by composite foreign keys to Person(id, familyId)).
+model ParentChildRelationship {
+  id           String             @id @default(uuid()) @db.Uuid
+  familyId     String             @db.Uuid
+  parentId     String             @db.Uuid
+  childId      String             @db.Uuid
+  type         ParentType         @default(BIOLOGICAL)
+  verification VerificationStatus @default(UNVERIFIED)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  parent Person @relation("ParentSide", fields: [parentId, familyId], references: [id, familyId], onDelete: Restrict)
+  child  Person @relation("ChildSide", fields: [childId, familyId], references: [id, familyId], onDelete: Restrict)
+
+  @@unique([parentId, childId])
+  @@index([familyId])
+  @@index([childId])
+}
+
+/// Partnership between two people, stored once with partnerAId < partnerBId.
+model Union {
+  id           String             @id @default(uuid()) @db.Uuid
+  familyId     String             @db.Uuid
+  partnerAId   String             @db.Uuid
+  partnerBId   String             @db.Uuid
+  type         UnionType          @default(MARRIAGE)
+  status       UnionStatus        @default(UNKNOWN)
+  startYear    Int?
+  endYear      Int?
+  verification VerificationStatus @default(UNVERIFIED)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  family   Family @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  partnerA Person @relation("PartnerA", fields: [partnerAId, familyId], references: [id, familyId], onDelete: Restrict)
+  partnerB Person @relation("PartnerB", fields: [partnerBId, familyId], references: [id, familyId], onDelete: Restrict)
+
+  @@unique([partnerAId, partnerBId])
+  @@index([familyId])
+  @@index([partnerBId])
+}
+
+/// A file in object storage. Only the key and metadata live in PostgreSQL.
+model MediaAsset {
+  id           String    @id @default(uuid()) @db.Uuid
+  familyId     String    @db.Uuid
+  storageKey   String    @unique
+  kind         MediaKind
+  mimeType     String
+  sizeBytes    Int
+  originalName String?
+  uploadedById String?   @db.Uuid
+  createdAt    DateTime  @default(now())
+
+  family      Family        @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  portraitOf  Person[]      @relation("PersonPortrait")
+  personPhoto PersonPhoto[]
+  memories    Memory[]
+
+  @@index([familyId])
+}
+
+model PersonPhoto {
+  id        String   @id @default(uuid()) @db.Uuid
+  familyId  String   @db.Uuid
+  personId  String   @db.Uuid
+  mediaId   String   @db.Uuid
+  caption   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  family Family     @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  person Person     @relation(fields: [personId], references: [id], onDelete: Restrict)
+  media  MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@index([personId])
+  @@index([familyId])
+}
+
+model Album {
+  id          String   @id @default(uuid()) @db.Uuid
+  familyId    String   @db.Uuid
+  title       String
+  description String?
+  createdById String?  @db.Uuid
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  family   Family   @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  memories Memory[]
+
+  @@index([familyId])
+}
+
+model Memory {
+  id          String          @id @default(uuid()) @db.Uuid
+  familyId    String          @db.Uuid
+  albumId     String?         @db.Uuid
+  mediaId     String?         @db.Uuid
+  title       String
+  description String?
+  eventType   MemoryEventType @default(OTHER)
+  year        Int?
+  month       Int?
+  day         Int?
+  approximate Boolean         @default(false)
+  location    String?
+  caption     String?
+  provenance  String?
+  isDemo      Boolean         @default(false)
+  createdById String?         @db.Uuid
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  family         Family          @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  album          Album?          @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  media          MediaAsset?     @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  people         MemoryPerson[]
+  timelineEvents TimelineEvent[]
+
+  @@index([familyId, year])
+  @@index([familyId, eventType])
+  @@index([albumId])
+}
+
+model MemoryPerson {
+  memoryId  String   @db.Uuid
+  personId  String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  memory Memory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Restrict)
+
+  @@id([memoryId, personId])
+  @@index([personId])
+}
+
+model TimelineEvent {
+  id          String            @id @default(uuid()) @db.Uuid
+  familyId    String            @db.Uuid
+  personId    String?           @db.Uuid
+  memoryId    String?           @db.Uuid
+  title       String
+  description String?
+  type        TimelineEventType @default(OTHER)
+  year        Int?
+  month       Int?
+  day         Int?
+  approximate Boolean           @default(false)
+  location    String?
+  isDemo      Boolean           @default(false)
+  createdById String?           @db.Uuid
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  family Family  @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  person Person? @relation(fields: [personId], references: [id], onDelete: SetNull)
+  memory Memory? @relation(fields: [memoryId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, year])
+  @@index([personId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  familyId   String?  @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  entityType String
+  entityId   String?
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  actor  User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, createdAt])
+  @@index([entityType, entityId])
+}

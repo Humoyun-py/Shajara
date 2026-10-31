@@ -1,0 +1,51 @@
+{
+  "name": "avlod",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AVLOD — premium family heritage platform",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,green \"npm run dev -w @avlod/api\" \"npm run dev -w @avlod/web\"",
+    "build": "npm run build -w @avlod/api && npm run build -w @avlod/web",
+    "start": "npm run start -w @avlod/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspaces --if-present",
+    "db:up": "docker compose up -d postgres minio minio-init",
+    "db:down": "docker compose down",
+    "db:embedded": "npm run db:embedded -w @avlod/api",
+    "db:generate": "npm run db:generate -w @avlod/api",
+    "db:migrate": "npm run db:migrate -w @avlod/api",
+    "db:deploy": "npm run db:deploy -w @avlod/api",
+    "db:seed": "npm run db:seed -w @avlod/api",
+    "db:reset": "npm run db:reset -w @avlod/api"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.18.1"
+  },
+  "allowScripts": {
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.27.7": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.21.5": true,
+    "esbuild@0.25.12": true,
+    "@embedded-postgres/windows-x64@18.4.0-beta.17": true
+  }
+}

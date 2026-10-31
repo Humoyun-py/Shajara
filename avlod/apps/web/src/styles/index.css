@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    @apply bg-ink-900 text-parchment antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply min-h-screen bg-ink-900 font-sans text-[15px] leading-relaxed text-parchment;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif font-medium tracking-tight;
+  }
+  ::selection {
+    @apply bg-gold-400/30 text-parchment;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold-400/80 ring-offset-2 ring-offset-ink-900;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-sans text-[11px] font-semibold uppercase tracking-eyebrow text-gold-400;
+  }
+  .hairline {
+    @apply border-white/[0.07];
+  }
+  .panel {
+    @apply rounded-2xl border border-white/[0.07] bg-ink-800/80 shadow-soft backdrop-blur-md;
+  }
+  .glass {
+    @apply border border-white/[0.08] bg-ink-900/55 backdrop-blur-xl;
+  }
+  .gold-rule {
+    @apply h-px w-16 bg-gradient-to-r from-gold-400/0 via-gold-400/70 to-gold-400/0;
+  }
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+  .grain::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0 bg-grain opacity-[0.06] mix-blend-overlay;
+  }
+}
+
+/* React Flow theming */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: rgba(213, 177, 107, 0.45);
+  --xy-edge-stroke-selected: #d5b16b;
+  --xy-minimap-background-color: #0b1612;
+  --xy-minimap-mask-background-color: rgba(7, 17, 14, 0.7);
+  --xy-controls-button-background-color: #14231c;
+  --xy-controls-button-background-color-hover: #1c2f26;
+  --xy-controls-button-color: #f4f0e7;
+  --xy-controls-button-border-color: rgba(255, 255, 255, 0.06);
+}
+.react-flow__controls {
+  @apply overflow-hidden rounded-xl border border-white/10 shadow-soft;
+}
+.react-flow__minimap {
+  @apply overflow-hidden rounded-xl border border-white/10;
+}
+.react-flow__attribution {
+  @apply bg-transparent text-sage-600;
+}
+.react-flow__attribution a {
+  @apply text-sage-600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(40px, -180px, 0);
+    opacity: 0;
+  }
+}
