@@ -2,21 +2,17 @@ databases:
   - name: avlod-db
     databaseName: avlod
     user: avlod
-    plan: basic-256mb
+    plan: free
     ipAllowList: []
 
 services:
   - type: web
     name: avlod-api
     runtime: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./avlod/apps/api/Dockerfile
     dockerContext: ./avlod
     healthCheckPath: /api/v1/health
-    disk:
-      name: avlod-media
-      mountPath: /var/data
-      sizeGB: 10
     envVars:
       - key: NODE_ENV
         value: production
@@ -25,7 +21,7 @@ services:
           name: avlod-db
           property: connectionString
       - key: WEB_ORIGIN
-        sync: false
+        value: https://avlod-shajara-humoyun.netlify.app
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: COOKIE_SECURE
@@ -33,7 +29,7 @@ services:
       - key: STORAGE_DRIVER
         value: local
       - key: LOCAL_STORAGE_DIR
-        value: /var/data
+        value: /tmp/avlod-media
       - key: MEDIA_URL_SECRET
         generateValue: true
       - key: PUBLIC_DEMO_ENABLED

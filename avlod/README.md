@@ -106,8 +106,17 @@ demo endpoints. Local demo login: `demo@avlod.local` with the password from `SEE
 ## Deploying to Netlify and Render
 
 The deployment configuration files are at the Git repository root: `netlify.toml` builds the web
-app from `avlod/`, and `render.yaml` provisions the API, PostgreSQL database, and persistent media
-disk. Deploy in this order:
+app from `avlod/`, and `render.yaml` provisions the API and PostgreSQL database on Render's free
+plans. This free setup is for a demo only, not for storing important family data:
+
+- Render's free PostgreSQL database expires 30 days after creation. Upgrade it before expiry to
+  retain access; expired databases are eventually deleted.
+- The free API service has an ephemeral filesystem and sleeps when idle. Uploaded media can be
+  lost on sleep, restart, or redeploy. Use an S3-compatible storage service and a paid Render plan
+  for durable uploads.
+- Free services may take about a minute to wake after inactivity.
+
+Deploy in this order:
 
 1. Push the repository to GitHub. In Render, create a **Blueprint** from the repository root and
    deploy `render.yaml`. Render generates the JWT and media-signing secrets, creates the database,
@@ -124,12 +133,11 @@ disk. Deploy in this order:
    the final Netlify domain and redeploy.
 
 The same-origin proxy is intentional: it keeps the refresh cookie first-party while the API runs
-on Render. Do not point `VITE_API_BASE_URL` directly at the Render hostname in production. The API
-uses a 10 GB persistent disk for uploads; the Render API service, disk, and PostgreSQL plan may
-incur charges. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `MAIL_FROM` in
-Render if invitations and password-reset links should be delivered by email. Without SMTP, those
-messages are only written to the API log. The demo family is not seeded in production, and public
-demo endpoints are disabled by default.
+on Render. Do not point `VITE_API_BASE_URL` directly at the Render hostname in production. Render
+free services cannot send outbound SMTP on common ports; configure a supported email provider if
+invitations and password-reset links must be delivered. Without SMTP, messages are only written to
+the API log. The demo family is not seeded in production, and public demo endpoints are disabled by
+default.
 
 ## Architecture notes
 
