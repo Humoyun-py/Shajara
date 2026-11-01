@@ -21,7 +21,7 @@ services:
           name: avlod-db
           property: connectionString
       - key: WEB_ORIGIN
-        value: https://avlod-shajara-humoyun.netlify.app
+        value: https://avlod-shajara.netlify.app
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: COOKIE_SECURE
