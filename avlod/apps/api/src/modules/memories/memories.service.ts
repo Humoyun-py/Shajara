@@ -5,7 +5,7 @@ import type {
   MemoryPerson,
   Person,
   TimelineEvent,
-} from '@prisma/client';
+} from '../../generated/prisma/client';
 import { fullName, type AlbumDTO, type MemoryDTO, type TimelineEventDTO } from '@avlod/shared';
 import { prisma, type Tx } from '../../lib/prisma';
 import { badRequest } from '../../lib/errors';

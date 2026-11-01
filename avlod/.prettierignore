@@ -2,4 +2,5 @@ node_modules
 dist
 coverage
 apps/api/prisma/migrations
+apps/api/src/generated/prisma
 package-lock.json

@@ -2,7 +2,6 @@ import { execSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { GlobalSetupContext } from 'vitest/node';
 import { adminQuery, startCluster, type Cluster } from '../scripts/pg-cluster';
 
 declare module 'vitest' {
@@ -19,7 +18,11 @@ declare module 'vitest' {
  * TEST_DATABASE_SERVER_URL (e.g. postgresql://user:pw@localhost:5432) points at an existing
  * server such as a CI service container; otherwise a local cluster is started on port 54339.
  */
-export default async function setup({ provide }: GlobalSetupContext) {
+export default async function setup({
+  provide,
+}: {
+  provide(key: 'databaseUrl', value: string): void;
+}) {
   let cluster: Cluster | null = null;
   let serverUrl = process.env.TEST_DATABASE_SERVER_URL;
   if (!serverUrl) {

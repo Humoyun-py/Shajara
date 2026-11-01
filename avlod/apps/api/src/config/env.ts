@@ -36,13 +36,16 @@ const schema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   MAIL_FROM: z.string().default('AVLOD <no-reply@avlod.local>'),
-  PUBLIC_DEMO_ENABLED: bool.default('true'),
+  PUBLIC_DEMO_ENABLED: bool.prefault('true'),
 });
 
 export type Env = z.infer<typeof schema>;
 
 function load(): Env {
-  const parsed = schema.safeParse(process.env);
+  const parsed = schema.safeParse({
+    ...process.env,
+    API_PORT: process.env.PORT ?? process.env.API_PORT,
+  });
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `  - ${i.path.join('.')}: ${i.message}`)

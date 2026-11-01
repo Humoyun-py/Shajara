@@ -21,19 +21,22 @@
     "@avlod/shared": "*",
     "@aws-sdk/client-s3": "^3.716.0",
     "@aws-sdk/s3-request-presigner": "^3.716.0",
-    "@prisma/client": "^6.1.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
-    "file-type": "^19.6.0",
+    "file-type": "^22.3.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^10.3.1",
+    "pg": "^8.23.1",
+    "prisma": "^7.10.1",
     "swagger-ui-express": "^5.0.1",
-    "zod": "^3.24.1"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -43,15 +46,14 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.2",
-    "@types/nodemailer": "^6.4.17",
+    "@types/pg": "^8.23.1",
     "@types/supertest": "^6.0.2",
     "@types/swagger-ui-express": "^4.1.7",
     "dotenv-cli": "^8.0.0",
     "embedded-postgres": "^18.4.0-beta.17",
-    "prisma": "^6.1.0",
     "supertest": "^7.0.0",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
-    "vitest": "^3.2.7"
+    "vitest": "^5.0.5"
   }
 }

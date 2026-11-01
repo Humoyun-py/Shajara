@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.git
+**/node_modules
+**/dist
+**/coverage
+apps/api/storage
+apps/api/.embedded-pg
+apps/api/src/generated/prisma

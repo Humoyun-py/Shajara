@@ -5,7 +5,7 @@ import {
   type InvitationDTO,
   type InvitationPreviewDTO,
 } from '@avlod/shared';
-import type { FamilyInvitation, User } from '@prisma/client';
+import type { FamilyInvitation, User } from '../../generated/prisma/client';
 import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';
 import { body, ok, param } from '../../lib/http';

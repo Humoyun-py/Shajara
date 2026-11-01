@@ -13,10 +13,13 @@ import {
   type ParentType,
   type Sex,
   type TimelineEventType,
-} from '@prisma/client';
+} from '../src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) throw new Error('DATABASE_URL is required to seed the database.');
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
 const DEMO_EMAIL = 'demo@avlod.local';
 const DEMO_PASSWORD = process.env.SEED_DEMO_PASSWORD ?? 'AvlodDemo2026';
 

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { User } from '@prisma/client';
+import type { User } from '../../generated/prisma/client';
 import type { AuthResultDTO, UserDTO } from '@avlod/shared';
 import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';

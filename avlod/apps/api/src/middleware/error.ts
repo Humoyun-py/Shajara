@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma/client';
 import multer from 'multer';
 import { AppError } from '../lib/errors';
 import { logger } from '../lib/logger';

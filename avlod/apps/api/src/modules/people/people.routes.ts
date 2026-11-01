@@ -13,7 +13,7 @@ import {
   type PersonProfileDTO,
   type SearchResultDTO,
 } from '@avlod/shared';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '../../generated/prisma/client';
 import { lockFamilyTree, prisma } from '../../lib/prisma';
 import { body, ok, pageMeta, param, query } from '../../lib/http';
 import { badRequest, notFound } from '../../lib/errors';

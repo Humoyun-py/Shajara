@@ -11,7 +11,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../src/generated/prisma/client';
 
 const require = createRequire(import.meta.url);
 
@@ -116,7 +117,9 @@ export async function startCluster(opts: {
     );
   }
   const base = `postgresql://postgres:${encodeURIComponent(password)}@localhost:${opts.port}`;
-  const admin = new PrismaClient({ datasourceUrl: `${base}/postgres` });
+  const admin = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: `${base}/postgres` }),
+  });
   try {
     const rows = await admin.$queryRaw<
       { n: number }[]
@@ -147,7 +150,9 @@ export async function startCluster(opts: {
 
 /** Runs one SQL statement against the maintenance database of a server. */
 export async function adminQuery(serverUrl: string, sql: string): Promise<void> {
-  const admin = new PrismaClient({ datasourceUrl: `${serverUrl}/postgres` });
+  const admin = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: `${serverUrl}/postgres` }),
+  });
   try {
     await admin.$executeRawUnsafe(sql);
   } finally {

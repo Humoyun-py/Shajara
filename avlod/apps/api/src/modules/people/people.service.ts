@@ -1,4 +1,9 @@
-import { Prisma, type ParentType, type UnionType, type VerificationStatus } from '@prisma/client';
+import {
+  Prisma,
+  type ParentType,
+  type UnionType,
+  type VerificationStatus,
+} from '../../generated/prisma/client';
 import {
   computeGenerations,
   countBranches,

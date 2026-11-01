@@ -1,7 +1,0 @@
-﻿[build]
-  base = "avlod"
-  command = "npm run build -w @avlod/web"
-  publish = "apps/web/dist"
-
-[build.environment]
-  NODE_VERSION = "22"

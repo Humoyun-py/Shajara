@@ -8,7 +8,7 @@
     "apps/*"
   ],
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "concurrently -k -n api,web -c yellow,green \"npm run dev -w @avlod/api\" \"npm run dev -w @avlod/web\"",
@@ -39,9 +39,9 @@
     "typescript-eslint": "^8.18.1"
   },
   "allowScripts": {
-    "prisma@6.19.3": true,
-    "@prisma/client@6.19.3": true,
-    "@prisma/engines@6.19.3": true,
+    "prisma@7.10.1": true,
+    "@prisma/client@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
     "esbuild@0.27.7": true,
     "esbuild@0.28.2": true,
     "esbuild@0.21.5": true,

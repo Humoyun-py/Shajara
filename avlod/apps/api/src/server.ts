@@ -4,7 +4,7 @@ import { prisma } from './lib/prisma';
 import { logger } from './lib/logger';
 
 const server = createApp().listen(env.API_PORT, () => {
-  logger.info(`AVLOD API listening on http://localhost:${env.API_PORT} (docs: /api/docs)`);
+  logger.info(`AVLOD API listening on port ${env.API_PORT} (docs: /api/docs)`);
 });
 
 async function shutdown(signal: string) {

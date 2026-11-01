@@ -24,7 +24,7 @@ avlod/
 
 ## Quick start
 
-Requirements: Node.js ≥ 20.11 (developed on Node 24, npm 11).
+Requirements: Node.js ≥ 22 (developed on Node 24, npm 11).
 
 ```bash
 npm install
@@ -103,24 +103,33 @@ demo endpoints. Local demo login: `demo@avlod.local` with the password from `SEE
 | `npm run db:seed` / `db:reset`                           | Demo data                                                     |
 | `npm run db:up` / `db:down`                              | Docker Compose PostgreSQL + MinIO                             |
 
-## Deploying to Render
+## Deploying to Netlify and Render
 
-The root `render.yaml` defines the production API, static web app, PostgreSQL database, and a
-persistent disk for uploaded media. To deploy:
+The deployment configuration files are at the Git repository root: `netlify.toml` builds the web
+app from `avlod/`, and `render.yaml` provisions the API, PostgreSQL database, and persistent media
+disk. Deploy in this order:
 
-1. Push the repository to GitHub and create a **Blueprint** in Render from that repository.
-2. When prompted, set `WEB_ORIGIN` to the full HTTPS URL of the `avlod-web` service and
-   `VITE_API_BASE_URL` to the full HTTPS URL of the `avlod-api` service (for example,
-   `https://avlod-web.onrender.com` and `https://avlod-api.onrender.com`).
-3. Deploy the Blueprint. Render builds both apps, creates the database, and applies committed
-   Prisma migrations when the API starts.
-4. If you add custom domains, update both URLs above and use web/API domains under the same
-   registrable domain so the browser can send the secure refresh cookie.
+1. Push the repository to GitHub. In Render, create a **Blueprint** from the repository root and
+   deploy `render.yaml`. Render generates the JWT and media-signing secrets, creates the database,
+   and applies committed Prisma migrations when the API starts.
+2. In Render, set the API service's `WEB_ORIGIN` to the exact HTTPS origin Netlify assigns to the
+   site, with no trailing slash (for example, `https://your-site.netlify.app`).
+3. In Netlify, import the same repository. It detects the root `netlify.toml`; leave
+   `VITE_API_BASE_URL` unset so browser requests use the same-origin proxy in
+   `avlod/apps/web/public/_redirects`.
+4. Confirm the API's Render URL. If it is not `https://avlod-api.onrender.com`, update the first
+   rule in `avlod/apps/web/public/_redirects` to the actual API URL, then redeploy the Netlify site.
+5. Test `https://<your-api>.onrender.com/api/v1/health`, then test sign-up/sign-in and media upload
+   through the Netlify site. Add custom domains in each provider as needed; update `WEB_ORIGIN` to
+   the final Netlify domain and redeploy.
 
-Render generates the JWT and media-signing secrets. The API uses a 10 GB persistent disk for
-uploads; the API service, disk, and PostgreSQL plan in `render.yaml` may incur charges. Configure
-SMTP environment variables in the API service if password resets and invitations should send email.
-The demo family is not seeded in production, and public demo endpoints are disabled by default.
+The same-origin proxy is intentional: it keeps the refresh cookie first-party while the API runs
+on Render. Do not point `VITE_API_BASE_URL` directly at the Render hostname in production. The API
+uses a 10 GB persistent disk for uploads; the Render API service, disk, and PostgreSQL plan may
+incur charges. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `MAIL_FROM` in
+Render if invitations and password-reset links should be delivered by email. Without SMTP, those
+messages are only written to the API log. The demo family is not seeded in production, and public
+demo endpoints are disabled by default.
 
 ## Architecture notes
 

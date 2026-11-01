@@ -5,7 +5,7 @@ import type {
   Person,
   TimelineEvent,
   Union,
-} from '@prisma/client';
+} from '../generated/prisma/client';
 import {
   fullName,
   hasRole,
